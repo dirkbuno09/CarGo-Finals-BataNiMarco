@@ -28,7 +28,6 @@ Initialize the local SQLite database and create the necessary tables for cars, c
 
 ### Step 4: Launch the Backend Server
 Start the Django development server. By default, the API will run at http://127.0.0.1:8000/.
-Bash
 
 `python manage.py runserver`
 
