@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CarGo — Fleet Management</title>
+
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script src="dashboard-auth.js"></script>
+
+  <!-- CarGo Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+<div id="app">
+
+
+  <!-- ═══════════════════════════════════
+       SIDEBAR
+  ════════════════════════════════════ -->
+  <aside id="sidebar">
+
+
+    <div class="logo-area">
+      <div class="logo-mark">Car<span style="color:#fff">Go</span></div>
+      <div class="logo-sub">Fleet Management</div>
+    </div>
+
+
+    <nav>
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" data-section="dashboard">
+        <span class="nav-icon">⬡</span> Dashboard
+      </div>
+
+
+      <div class="nav-label" style="margin-top:8px">Management</div>
+      <div class="nav-item" data-section="cars">
+        <span class="nav-icon">🚗</span> Vehicles
+      </div>
+      <div class="nav-item" data-section="clients">
+        <span class="nav-icon">👤</span> Clients
+      </div>
+      <div class="nav-item" data-section="rentals">
+        <span class="nav-icon">📋</span> Rentals
+      </div>
+      <div class="nav-item" data-section="returns">
+        <span class="nav-icon">↩</span> Returns
+      </div>
+    </nav>
+
+
+    <div class="sidebar-footer">
+      <div class="server-status">
+        <span class="dot" id="serverDot"></span>
+        <span id="serverLabel">Checking API…</span>
+      </div>
+    </div>
+
+
+  </aside>
+
+
+  <!-- ═══════════════════════════════════
+       MAIN CONTENT
+  ════════════════════════════════════ -->
+  <main id="main">
+
+
+    <!-- ──────────────────────────────
+         DASHBOARD
+    ─────────────────────────────── -->
+    <div id="section-dashboard" class="section active">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dash<span>board</span></div>
+          <div class="page-subtitle">Fleet Overview</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">↻ Refresh</button>
+      </div>
+
+
+      <div class="page-content">
+
+
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Vehicles</div>
+            <div class="stat-value" id="d-total-cars">—</div>
+            <div class="stat-icon">🚗</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Available</div>
+            <div class="stat-value" id="d-avail-cars">—</div>
+            <div class="stat-icon">✓</div>
+          </div>
+          <div class="stat-card warn">
+            <div class="stat-label">Currently Rented</div>
+            <div class="stat-value" id="d-rented-cars">—</div>
+            <div class="stat-icon">⏱</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">Total Clients</div>
+            <div class="stat-value" id="d-clients">—</div>
+            <div class="stat-icon">👤</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-label">Active Rentals</div>
+            <div class="stat-value" id="d-rentals">—</div>
+            <div class="stat-icon">📋</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Returns</div>
+            <div class="stat-value" id="d-returns">—</div>
+            <div class="stat-icon">↩</div>
+          </div>
+        </div>
+
+
+        <!-- Recent Rentals -->
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-title">Recent Rentals</div>
+            <button class="btn btn-ghost btn-sm" onclick="navigate('rentals')">View All →</button>
+          </div>
+          <div id="recent-rentals-body">
+            <div class="loading">LOADING...</div>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+
+    <!-- ──────────────────────────────
+         VEHICLES
+    ─────────────────────────────── -->
+    <div id="section-cars" class="section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Ve<span>hicles</span></div>
+          <div class="page-subtitle">Vehicle Inventory</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('car-add')">+ Add Vehicle</button>
+      </div>
+
+
+      <div class="page-content">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-title">All Vehicles</div>
+            <input class="search-input" type="text" placeholder="Search plate, make…"
+              oninput="filterTable('cars-tbody', this.value)">
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Plate</th>
+                <th>Vehicle</th>
+                <th>Year</th>
+                <th>Color</th>
+                <th>Daily Rate</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="cars-tbody">
+              <tr><td colspan="8"><div class="loading">LOADING...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ──────────────────────────────
+         CLIENTS
+    ─────────────────────────────── -->
+    <div id="section-clients" class="section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Cli<span>ents</span></div>
+          <div class="page-subtitle">Customer Profiles</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('client-add')">+ Add Client</button>
+      </div>
+
+
+      <div class="page-content">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-title">All Clients</div>
+            <input class="search-input" type="text" placeholder="Search name, license…"
+              oninput="filterTable('clients-tbody', this.value)">
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>License ID</th>
+                <th>Registered</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="clients-tbody">
+              <tr><td colspan="7"><div class="loading">LOADING...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ──────────────────────────────
+         RENTALS
+    ─────────────────────────────── -->
+    <div id="section-rentals" class="section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Ren<span>tals</span></div>
+          <div class="page-subtitle">Booking Records</div>
+        </div>
+        <button class="btn btn-primary" onclick="openRentalModal()">+ New Rental</button>
+      </div>
+
+
+      <div class="page-content">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-title">All Rentals</div>
+            <input class="search-input" type="text" placeholder="Search client, car…"
+              oninput="filterTable('rentals-tbody', this.value)">
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Vehicle</th>
+                <th>Client</th>
+                <th>Start</th>
+                <th>Expected Return</th>
+                <th>Total Cost</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="rentals-tbody">
+              <tr><td colspan="7"><div class="loading">LOADING...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ──────────────────────────────
+         RETURNS
+    ─────────────────────────────── -->
+    <div id="section-returns" class="section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Re<span>turns</span></div>
+          <div class="page-subtitle">Return Processing</div>
+        </div>
+        <button class="btn btn-primary" onclick="openReturnModal()">+ Log Return</button>
+      </div>
+
+
+      <div class="page-content">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-title">All Returns</div>
+            <input class="search-input" type="text" placeholder="Search rental…"
+              oninput="filterTable('returns-tbody', this.value)">
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Rental</th>
+                <th>Return Date</th>
+                <th>Condition</th>
+                <th>Late?</th>
+                <th>Remarks</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="returns-tbody">
+              <tr><td colspan="7"><div class="loading">LOADING...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+  </main>
+</div>
+
+
+
+
+<!-- ═══════════════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════════════ -->
+
+
+<!-- ── ADD VEHICLE ── -->
+<div class="modal-overlay" id="modal-car-add">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add <span>Vehicle</span></div>
+      <button class="modal-close" onclick="closeModal('car-add')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Make</label>
+        <input type="text" id="car-add-make" placeholder="e.g. Toyota">
+      </div>
+      <div class="form-group">
+        <label>Model</label>
+        <input type="text" id="car-add-model" placeholder="e.g. Vios">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Year</label>
+        <input type="number" id="car-add-year" placeholder="e.g. 2022">
+      </div>
+      <div class="form-group">
+        <label>Color</label>
+        <input type="text" id="car-add-color" placeholder="e.g. White">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Plate Number</label>
+        <input type="text" id="car-add-plate" placeholder="e.g. ABC 1234">
+      </div>
+      <div class="form-group">
+        <label>Daily Rate (₱)</label>
+        <input type="number" id="car-add-rate" placeholder="e.g. 1500">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="car-add-status">
+        <option value="available">Available</option>
+        <option value="rented">Rented</option>
+        <option value="maintenance">Under Maintenance</option>
+      </select>
+    </div>
+    <div id="car-add-msg" class="msg"></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('car-add')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitCar()">Save Vehicle</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── EDIT VEHICLE ── -->
+<div class="modal-overlay" id="modal-car-edit">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Edit <span>Vehicle</span></div>
+      <button class="modal-close" onclick="closeModal('car-edit')">✕</button>
+    </div>
+    <input type="hidden" id="car-edit-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Make</label>
+        <input type="text" id="car-edit-make">
+      </div>
+      <div class="form-group">
+        <label>Model</label>
+        <input type="text" id="car-edit-model">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Year</label>
+        <input type="number" id="car-edit-year">
+      </div>
+      <div class="form-group">
+        <label>Color</label>
+        <input type="text" id="car-edit-color">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Plate Number</label>
+        <input type="text" id="car-edit-plate">
+      </div>
+      <div class="form-group">
+        <label>Daily Rate (₱)</label>
+        <input type="number" id="car-edit-rate">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="car-edit-status">
+        <option value="available">Available</option>
+        <option value="rented">Rented</option>
+        <option value="maintenance">Under Maintenance</option>
+      </select>
+    </div>
+    <div id="car-edit-msg" class="msg"></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('car-edit')">Cancel</button>
+      <button class="btn btn-primary" onclick="updateCar()">Update Vehicle</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── ADD CLIENT ── -->
+<div class="modal-overlay" id="modal-client-add">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add <span>Client</span></div>
+      <button class="modal-close" onclick="closeModal('client-add')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>First Name</label>
+        <input type="text" id="client-add-fname" placeholder="Juan">
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" id="client-add-lname" placeholder="Dela Cruz">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="text" id="client-add-phone" placeholder="09XX XXX XXXX">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="client-add-email" placeholder="juan@email.com">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Driver's License ID</label>
+      <input type="text" id="client-add-license" placeholder="N01-23-456789">
+    </div>
+    <div class="form-group">
+      <label>Address</label>
+      <textarea id="client-add-address" placeholder="Full address…"></textarea>
+    </div>
+    <div id="client-add-msg" class="msg"></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('client-add')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitClient()">Save Client</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── EDIT CLIENT ── -->
+<div class="modal-overlay" id="modal-client-edit">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Edit <span>Client</span></div>
+      <button class="modal-close" onclick="closeModal('client-edit')">✕</button>
+    </div>
+    <input type="hidden" id="client-edit-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>First Name</label>
+        <input type="text" id="client-edit-fname">
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" id="client-edit-lname">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="text" id="client-edit-phone">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="client-edit-email">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Driver's License ID</label>
+      <input type="text" id="client-edit-license">
+    </div>
+    <div class="form-group">
+      <label>Address</label>
+      <textarea id="client-edit-address"></textarea>
+    </div>
+    <div id="client-edit-msg" class="msg"></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('client-edit')">Cancel</button>
+      <button class="btn btn-primary" onclick="updateClient()">Update Client</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── NEW RENTAL ── -->
+<div class="modal-overlay" id="modal-rental-add">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">New <span>Rental</span></div>
+      <button class="modal-close" onclick="closeModal('rental-add')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Vehicle</label>
+      <select id="rental-add-car"></select>
+    </div>
+    <div class="form-group">
+      <label>Client</label>
+      <select id="rental-add-client"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Start Date</label>
+        <input type="date" id="rental-add-start">
+      </div>
+      <div class="form-group">
+        <label>Expected Return Date</label>
+        <input type="date" id="rental-add-end">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea id="rental-add-notes" placeholder="Optional notes…"></textarea>
+    </div>
+    <div id="rental-add-msg" class="msg"></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('rental-add')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitRental()">Create Rental</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── LOG RETURN ── -->
+<div class="modal-overlay" id="modal-return-add">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Log <span>Return</span></div>
+      <button class="modal-close" onclick="closeModal('return-add')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Rental</label>
+      <select id="return-add-rental"></select>
+    </div>
+    <div class="form-group">
+      <label>Return Date</label>
+      <input type="date" id="return-add-date">
+    </div>
+    <div class="form-group">
+      <label>Vehicle Condition</label>
+      <select id="return-add-condition">
+        <option value="good">Good</option>
+        <option value="minor_damage">Minor Damage</option>
+        <option value="major_damage">Major Damage</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Remarks</label>
+      <textarea id="return-add-remarks" placeholder="Optional remarks…"></textarea>
+    </div>
+    <div id="return-add-msg" class="msg"></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('return-add')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitReturn()">Log Return</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── DELETE CONFIRM ── -->
+<div class="modal-overlay delete-modal" id="modal-delete">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--danger)">Delete <span>Record</span></div>
+      <button class="modal-close" onclick="closeModal('delete')">✕</button>
+    </div>
+    <p class="delete-msg">Are you sure you want to delete this record? This action cannot be undone.</p>
+    <div class="delete-name" id="delete-label">—</div>
+    <div id="delete-msg" class="msg"></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('delete')">Cancel</button>
+      <button class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- ═══════════════════════════════════════════════════
+     JavaScript — loaded LAST so the DOM is ready
+════════════════════════════════════════════════════ -->
+<script src="main.js"></script>
+<script src="dashboard-auth.js"></script>
+
+</body>
+</html>
+
